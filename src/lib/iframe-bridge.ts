@@ -6,6 +6,7 @@
  */
 
 import { supabase } from "@/integrations/supabase/client";
+import { lovable } from "@/integrations/lovable/index";
 
 // Script injected into iframes to provide FlowSync API
 export function getIframeBridgeScript(): string {
@@ -43,6 +44,7 @@ export function getIframeBridgeScript(): string {
       signOut: function() { return call('auth.signOut', {}); },
       getUser: function() { return call('auth.getUser', {}); },
       getSession: function() { return call('auth.getSession', {}); },
+      googleSignIn: function() { return call('auth.googleSignIn', {}); },
     },
     projects: {
       list: function() { return call('projects.list', {}); },
@@ -114,6 +116,14 @@ export async function handleIframeMessage(
       case 'auth.getSession': {
         const { data } = await supabase.auth.getSession();
         result = { session: data.session };
+        break;
+      }
+      case 'auth.googleSignIn': {
+        const { error: oauthErr } = await lovable.auth.signInWithOAuth("google", {
+          redirect_uri: window.location.origin,
+        });
+        if (oauthErr) throw oauthErr;
+        result = { success: true };
         break;
       }
       

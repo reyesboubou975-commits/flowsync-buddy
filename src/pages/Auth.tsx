@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { getIframeBridgeScript, handleIframeMessage } from "@/lib/iframe-bridge";
+import { supabase } from "@/integrations/supabase/client";
 
 // FlowSync Auth v4 — Mobile Ready
 // Architecture: srcdoc iframe
@@ -15,6 +16,16 @@ export default function FlowSyncAuth() {
     if (page === 'dashboard' || page === '/dashboard') navigate('/dashboard');
     else if (page === '/' || page === 'landing') navigate('/');
     else navigate(page);
+  }, [navigate]);
+
+  // Check if user is already logged in (e.g. returning from OAuth)
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        navigate('/dashboard');
+      }
+    });
+    return () => subscription.unsubscribe();
   }, [navigate]);
 
   useEffect(() => {
@@ -209,6 +220,26 @@ function getAuthIntegrationScript(): string {
                 showAlert(container, 'err', err.message);
               });
           }
+        });
+      }
+    });
+    
+    // Hook Google sign-in buttons
+    document.querySelectorAll('.sbtn').forEach(function(btn) {
+      var text = (btn.textContent || '').toLowerCase();
+      if (text.includes('google')) {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          btn.classList.add('loading');
+          FlowSync.auth.googleSignIn()
+            .then(function() {
+              // OAuth will redirect, so nothing else to do
+            })
+            .catch(function(err) {
+              btn.classList.remove('loading');
+              var container = btn.closest('.card') || document.body;
+              showAlert(container, 'err', err.message || 'Erreur Google Sign-In');
+            });
         });
       }
     });

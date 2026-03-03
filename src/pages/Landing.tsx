@@ -46,8 +46,9 @@ export default function FlowSyncLanding() {
             el.addEventListener('click', (ev) => {
               ev.preventDefault();
               ev.stopPropagation();
+              ev.stopImmediatePropagation();
               navigate('/auth');
-            });
+            }, true); // capture phase to fire FIRST
           }
         });
       }

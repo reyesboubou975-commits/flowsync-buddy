@@ -80,10 +80,22 @@ function getDashboardDataScript(): string {
   }
   
   waitForBridge(function() {
+    // Check if this is an onboarding flow (new signup)
+    var urlParams = new URLSearchParams(window.parent.location.search);
+    var isOnboarding = urlParams.get('onboarding') === 'true';
+    
+    // Show or hide onboarding overlay
+    var obOverlay = document.getElementById('onboarding-overlay');
+    if (obOverlay) {
+      if (!isOnboarding) {
+        obOverlay.classList.add('hidden');
+        obOverlay.style.display = 'none';
+      }
+    }
+    
     // Load user info
     FlowSync.auth.getUser().then(function(res) {
       if (res && res.user) {
-        // Update user chip in sidebar if it exists
         var userName = document.querySelector('.user-name');
         if (userName) {
           userName.textContent = res.user.user_metadata?.full_name || res.user.email?.split('@')[0] || 'User';

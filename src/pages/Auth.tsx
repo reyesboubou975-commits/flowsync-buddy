@@ -151,8 +151,8 @@ function getAuthIntegrationScript(): string {
               setLoading(submitBtn, false);
               showAlert(form, 'ok', 'Compte créé avec succès ! Redirection...');
               setTimeout(function() {
-                FlowSync.navigate('/dashboard');
-              }, 1500);
+                FlowSync.navigate('/dashboard?onboarding=true');
+              }, 1200);
             })
             .catch(function(err) {
               setLoading(submitBtn, false);
@@ -207,7 +207,7 @@ function getAuthIntegrationScript(): string {
               .then(function() {
                 setLoading(btn, false);
                 showAlert(container, 'ok', 'Compte créé ! Redirection...');
-                setTimeout(function() { FlowSync.navigate('/dashboard'); }, 1500);
+                setTimeout(function() { FlowSync.navigate('/dashboard?onboarding=true'); }, 1200);
               })
               .catch(function(err) {
                 setLoading(btn, false);

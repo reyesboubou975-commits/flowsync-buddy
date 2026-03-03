@@ -18,11 +18,16 @@ export default function FlowSyncAuth() {
     else navigate(page);
   }, [navigate]);
 
-  // Check if user is already logged in (e.g. returning from OAuth)
+  // Only redirect on OAuth callback (not on signup which requires email confirmation)
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        navigate('/dashboard');
+      if (event === 'SIGNED_IN' && session) {
+        // Check if this is an OAuth sign-in (has provider_token or came from URL with access_token)
+        const hashParams = new URLSearchParams(window.location.hash.substring(1));
+        const isOAuthCallback = hashParams.has('access_token') || hashParams.has('provider_token');
+        if (isOAuthCallback) {
+          navigate('/dashboard');
+        }
       }
     });
     return () => subscription.unsubscribe();

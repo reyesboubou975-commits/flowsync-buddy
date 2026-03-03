@@ -33,7 +33,7 @@ export function getIframeBridgeScript(): string {
     return new Promise(function(resolve, reject) {
       const id = ++_reqId;
       _pending[id] = { resolve: resolve, reject: reject };
-      window.parent.postMessage({ _flowsync_request: true, id: id, action: action, payload: payload }, '*');
+      window.parent.postMessage({ _flowsync_request: true, id: id, action: action, payload: payload }, window.location.origin || '*');
     });
   }
   
@@ -62,7 +62,7 @@ export function getIframeBridgeScript(): string {
   };
   
   // Notify parent that bridge is ready
-  window.parent.postMessage({ _flowsync_ready: true }, '*');
+  window.parent.postMessage({ _flowsync_ready: true }, window.location.origin || '*');
 })();
 `;
 }
@@ -72,6 +72,8 @@ export async function handleIframeMessage(
   event: MessageEvent,
   onNavigate?: (page: string) => void
 ): Promise<void> {
+  // Validate origin - only accept messages from same origin
+  if (event.origin !== window.location.origin && event.origin !== 'null') return;
   if (!event.data || !event.data._flowsync_request) return;
   
   const { id, action, payload } = event.data;
@@ -237,7 +239,7 @@ export async function handleIframeMessage(
   // Send response back to iframe
   const source = event.source as Window;
   if (source) {
-    source.postMessage({ _flowsync_response: true, id, result, error }, '*');
+    source.postMessage({ _flowsync_response: true, id, result, error }, window.location.origin || '*');
   }
 }
 
@@ -253,7 +255,7 @@ export function setupTasksRealtime(iframeRef: React.RefObject<HTMLIFrameElement 
           record: payload.new,
           old_record: payload.old,
           table: 'tasks',
-        }, '*');
+        }, window.location.origin || '*');
       }
     })
     .subscribe();
